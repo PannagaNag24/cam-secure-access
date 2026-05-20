@@ -1,0 +1,81 @@
+ldap {
+
+#################################################
+# LDAP SERVER (LDAPS)
+#################################################
+
+server = "ldaps://172.18.0.3"
+port = 636
+
+identity = "cn=admin,dc=example,dc=com"
+password = "welcome123#"
+
+base_dn = "dc=example,dc=com"
+
+#################################################
+# USER LOOKUP
+#################################################
+
+user {
+    base_dn = "ou=People,dc=example,dc=com"
+    filter = "(uid=%{%{Stripped-User-Name}:-%{User-Name}})"
+}
+
+#################################################
+# GROUP LOOKUP (RBAC)
+#################################################
+
+group {
+    base_dn = "ou=Groups,dc=example,dc=com"
+    filter = "(objectClass=posixGroup)"
+    name_attribute = cn
+    membership_attribute = memberUid
+}
+
+#################################################
+# PASSWORD HANDLING
+#################################################
+
+update {
+    control:Password-With-Header += 'userPassword'
+}
+
+#################################################
+# TLS CONFIGURATION
+#################################################
+
+tls {
+    start_tls = no
+    require_cert = allow
+    ca_file = /etc/ssl/certs/ca-certificates.crt
+}
+
+#################################################
+# LDAP OPTIONS
+#################################################
+
+options {
+    chase_referrals = yes
+    rebind = yes
+    net_timeout = 1
+    res_timeout = 10
+    srv_timelimit = 3
+}
+
+#################################################
+# CONNECTION POOL
+#################################################
+
+pool {
+    start = 0
+    min = 0
+    max = 5
+    spare = 3
+    uses = 0
+    retry_delay = 30
+    lifetime = 0
+    idle_timeout = 60
+}
+
+
+}

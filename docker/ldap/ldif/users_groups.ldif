@@ -1,0 +1,244 @@
+############################################
+
+# GROUPS (ABB RBAC)
+
+############################################
+
+dn: cn=VIEWER,ou=Groups,dc=example,dc=com
+objectClass: posixGroup
+cn: VIEWER
+gidNumber: 5001
+memberUid: viewer1
+
+dn: cn=OPERATOR,ou=Groups,dc=example,dc=com
+objectClass: posixGroup
+cn: OPERATOR
+gidNumber: 5002
+memberUid: bob
+memberUid: dave
+
+dn: cn=ENGINEER,ou=Groups,dc=example,dc=com
+objectClass: posixGroup
+cn: ENGINEER
+gidNumber: 5003
+memberUid: carol
+memberUid: daniel
+
+dn: cn=ADMINISTRATOR,ou=Groups,dc=example,dc=com
+objectClass: posixGroup
+cn: ADMINISTRATOR
+gidNumber: 5004
+memberUid: alice
+memberUid: emma
+
+dn: cn=INSTALLER,ou=Groups,dc=example,dc=com
+objectClass: posixGroup
+cn: INSTALLER
+gidNumber: 5005
+memberUid: installer1
+
+dn: cn=SECAUD,ou=Groups,dc=example,dc=com
+objectClass: posixGroup
+cn: SECAUD
+gidNumber: 5006
+memberUid: secaud1
+
+dn: cn=SECADM,ou=Groups,dc=example,dc=com
+objectClass: posixGroup
+cn: SECADM
+gidNumber: 5007
+memberUid: secadm1
+
+dn: cn=RBACMNT,ou=Groups,dc=example,dc=com
+objectClass: posixGroup
+cn: RBACMNT
+gidNumber: 5008
+memberUid: rbacmnt1
+
+############################################
+
+# USERS
+
+############################################
+
+################ VIEWER ################
+
+dn: uid=viewer1,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: viewer1
+cn: Viewer One
+sn: One
+uidNumber: 1001
+gidNumber: 5001
+homeDirectory: /home/viewer1
+loginShell: /bin/bash
+title: Viewer
+description: Role=VIEWER
+shadowLastChange: 20000
+
+################ OPERATOR ################
+
+dn: uid=bob,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: bob
+cn: Bob Johnson
+sn: Johnson
+uidNumber: 1002
+gidNumber: 5002
+homeDirectory: /home/bob
+loginShell: /bin/bash
+title: Operator
+description: Role=OPERATOR
+shadowLastChange: 20000
+
+dn: uid=dave,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: dave
+cn: Dave Patel
+sn: Patel
+uidNumber: 1003
+gidNumber: 5002
+homeDirectory: /home/dave
+loginShell: /bin/bash
+title: Operator
+description: Role=OPERATOR
+shadowLastChange: 20000
+
+################ ENGINEER ################
+
+dn: uid=carol,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: carol
+cn: Carol White
+sn: White
+uidNumber: 1004
+gidNumber: 5003
+homeDirectory: /home/carol
+loginShell: /bin/bash
+title: Engineer
+description: Role=ENGINEER
+shadowLastChange: 20000
+
+dn: uid=daniel,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: daniel
+cn: Daniel Lee
+sn: Lee
+uidNumber: 1005
+gidNumber: 5003
+homeDirectory: /home/daniel
+loginShell: /bin/bash
+title: Engineer
+description: Role=ENGINEER
+shadowLastChange: 20000
+
+################ ADMINISTRATOR ################
+
+dn: uid=alice,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: alice
+cn: Alice Smith
+sn: Smith
+uidNumber: 1006
+gidNumber: 5004
+homeDirectory: /home/alice
+loginShell: /bin/bash
+title: System Administrator
+description: Role=ADMINISTRATOR
+shadowLastChange: 20000
+
+dn: uid=emma,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: emma
+cn: Emma Blake
+sn: Blake
+uidNumber: 1007
+gidNumber: 5004
+homeDirectory: /home/emma
+loginShell: /bin/bash
+title: Network Administrator
+description: Role=ADMINISTRATOR
+shadowLastChange: 20000
+
+################ INSTALLER ################
+
+dn: uid=installer1,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: installer1
+cn: Installer One
+sn: One
+uidNumber: 1008
+gidNumber: 5005
+homeDirectory: /home/installer1
+loginShell: /bin/bash
+title: Installer
+description: Role=INSTALLER
+shadowLastChange: 20000
+
+################ SECAUD ################
+
+dn: uid=secaud1,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: secaud1
+cn: Security Auditor
+sn: One
+uidNumber: 1009
+gidNumber: 5006
+homeDirectory: /home/secaud1
+loginShell: /bin/bash
+title: Security Auditor
+description: Role=SECAUD
+shadowLastChange: 20000
+
+################ SECADM ################
+
+dn: uid=secadm1,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: secadm1
+cn: Security Admin
+sn: One
+uidNumber: 1010
+gidNumber: 5007
+homeDirectory: /home/secadm1
+loginShell: /bin/bash
+title: Security Admin
+description: Role=SECADM
+shadowLastChange: 20000
+
+################ RBACMNT ################
+
+dn: uid=rbacmnt1,ou=People,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: rbacmnt1
+cn: RBAC Manager
+sn: One
+uidNumber: 1011
+gidNumber: 5008
+homeDirectory: /home/rbacmnt1
+loginShell: /bin/bash
+title: RBAC Manager
+description: Role=RBACMNT
+shadowLastChange: 20000
+

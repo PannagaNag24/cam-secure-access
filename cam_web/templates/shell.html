@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Shell — CAM{% endblock %}
+{% block head %}
+<style>
+  .terminal {
+    background: #080a0d;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    height: 460px;
+    overflow-y: auto;
+    line-height: 1.7;
+  }
+  .term-line { color: #94a3b8; white-space: pre-wrap; word-break: break-all; }
+  .term-line.cmd  { color: var(--amber); }
+  .term-line.err  { color: #fca5a5; }
+  .term-line.ok   { color: #86efac; }
+  .term-prompt {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 0.75rem;
+  }
+  .prompt-label {
+    font-family: var(--mono); font-size: 0.82rem;
+    color: var(--amber); white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .prompt-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    padding: 4px 0;
+    outline: none;
+  }
+  .prompt-input:focus { border-color: var(--amber); }
+  .allowed-list { display:flex; flex-wrap:wrap; gap:6px; margin-top:0.75rem; }
+  .allowed-tag  { font-family:var(--mono); font-size:0.65rem; padding:2px 8px; background:var(--surface2); border:1px solid var(--border); border-radius:2px; color:var(--text-muted); cursor:pointer; transition:border-color 0.1s,color 0.1s; }
+  .allowed-tag:hover { border-color:var(--amber); color:var(--amber); }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div style="margin-bottom:1.5rem">
+    <a href="{{ url_for('dashboard') }}" style="font-family:var(--mono);font-size:0.75rem;color:var(--text-muted);text-decoration:none">← Dashboard</a>
+    <div class="section-heading" style="margin-top:0.5rem">Restricted Shell</div>
+    <div class="section-sub">Allowlisted commands only · All executions are audit logged</div>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><span class="dot"></span>Permitted Commands</div>
+    <div class="allowed-list">
+      {% for cmd in allowed %}
+      <span class="allowed-tag" onclick="setCmd('{{ cmd }}')">{{ cmd }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="dot"></span>Terminal · {{ user }}@cam</div>
+    <div class="terminal" id="terminal">
+      <div class="term-line ok">CAM Restricted Shell — session started</div>
+      <div class="term-line">Type a command below or click a permitted command above.</div>
+    </div>
+    <div class="term-prompt">
+      <span class="prompt-label">{{ user }}@cam $</span>
+      <input class="prompt-input" id="cmd-input" type="text"
+             placeholder="enter command…" autofocus
+             onkeydown="if(event.key==='Enter') run()">
+      <button class="btn btn-primary btn-sm" onclick="run()">RUN</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearTerm()">CLEAR</button>
+    </div>
+  </div>
+</div>
+<script>
+const term = document.getElementById('terminal');
+const inp  = document.getElementById('cmd-input');
+let history = [], histIdx = -1;
+
+inp.addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp')   { e.preventDefault(); histIdx = Math.min(histIdx+1, history.length-1); inp.value = history[histIdx] || ''; }
+  if (e.key === 'ArrowDown') { e.preventDefault(); histIdx = Math.max(histIdx-1, -1); inp.value = histIdx < 0 ? '' : history[histIdx]; }
+});
+
+function setCmd(cmd) { inp.value = cmd; inp.focus(); }
+
+function addLine(text, cls='') {
+  const d = document.createElement('div');
+  d.className = 'term-line' + (cls ? ' ' + cls : '');
+  d.textContent = text;
+  term.appendChild(d);
+  term.scrollTop = term.scrollHeight;
+}
+
+function clearTerm() { term.innerHTML = ''; }
+
+async function run() {
+  const cmd = inp.value.trim();
+  if (!cmd) return;
+  history.unshift(cmd); histIdx = -1;
+  inp.value = '';
+  addLine('$ ' + cmd, 'cmd');
+  try {
+    const r = await fetch('/shell/run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({cmd})
+    });
+    const d = await r.json();
+    if (d.output) d.output.trimEnd().split('\n').forEach(l => addLine(l));
+    if (d.error)  d.error.trimEnd().split('\n').forEach(l => addLine(l, 'err'));
+    if (!d.output && !d.error) addLine('(no output)', 'term-line');
+  } catch(e) {
+    addLine('Network error: ' + e, 'err');
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,6 @@
+# /etc/pam.d/cam-gui
+# SSSD/LDAP authentication — fallback after LDAPS + RADIUS
+# Install: sudo cp system-config/pam.d/cam-gui /etc/pam.d/cam-gui
+
+auth    required    pam_sss.so
+account required    pam_sss.so

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CAM Secure Access{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Design system ──────────────────────────────────── */
+    :root {
+      --bg:        #0a0c0f;
+      --surface:   #111418;
+      --surface2:  #181c22;
+      --border:    #252b35;
+      --border2:   #2e3644;
+      --amber:     #f59e0b;
+      --amber-dim: #92600a;
+      --amber-glow:#f59e0b22;
+      --green:     #22c55e;
+      --red:       #ef4444;
+      --blue:      #3b82f6;
+      --text:      #e2e8f0;
+      --text-muted:#64748b;
+      --text-dim:  #94a3b8;
+      --mono:      'Share Tech Mono', monospace;
+      --sans:      'Barlow', sans-serif;
+      --cond:      'Barlow Condensed', sans-serif;
+      --radius:    4px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 15px; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Subtle grid overlay on body */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Topbar ─────────────────────────────────────────── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 54px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar-brand {
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .topbar-logo {
+      width: 28px; height: 28px;
+      border: 2px solid var(--amber);
+      border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--amber);
+      letter-spacing: -0.5px;
+    }
+
+    .topbar-title {
+      font-family: var(--cond);
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .topbar-title span { color: var(--amber); }
+
+    .topbar-right {
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+
+    .topbar-user {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    .topbar-user strong { color: var(--amber); }
+
+    .topbar-nav { display: flex; gap: 0.25rem; }
+
+    .nav-link {
+      font-family: var(--cond);
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover, .nav-link.active {
+      color: var(--amber);
+      background: var(--amber-glow);
+    }
+
+    .btn-logout {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-logout:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* ── Layout ─────────────────────────────────────────── */
+    .page { position: relative; z-index: 1; }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem 2rem;
+    }
+
+    /* ── Cards ──────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+
+    .card-header {
+      font-family: var(--cond);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .card-header .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 6px var(--amber);
+    }
+
+    /* ── Badges ─────────────────────────────────────────── */
+    .badge {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 2px;
+      letter-spacing: 1px;
+      display: inline-block;
+    }
+    .badge-amber  { background: var(--amber-glow); color: var(--amber); border: 1px solid var(--amber-dim); }
+    .badge-green  { background: #22c55e18; color: var(--green); border: 1px solid #22c55e44; }
+    .badge-red    { background: #ef444418; color: var(--red);   border: 1px solid #ef444444; }
+    .badge-blue   { background: #3b82f618; color: var(--blue);  border: 1px solid #3b82f644; }
+    .badge-muted  { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* ── Buttons ────────────────────────────────────────── */
+    .btn {
+      font-family: var(--cond);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 10px 24px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center; gap: 8px;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: var(--amber);
+      color: #0a0c0f;
+    }
+    .btn-primary:hover { background: #fbbf24; box-shadow: 0 0 20px var(--amber-dim); }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text-dim);
+    }
+    .btn-ghost:hover { border-color: var(--amber); color: var(--amber); }
+
+    .btn-danger {
+      background: transparent;
+      border: 1px solid #ef444455;
+      color: var(--red);
+    }
+    .btn-danger:hover { background: #ef444418; }
+
+    .btn-sm { padding: 6px 14px; font-size: 0.72rem; }
+
+    /* ── Forms ──────────────────────────────────────────── */
+    .form-group { margin-bottom: 1.25rem; }
+
+    label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input[type=text], input[type=password] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px var(--amber-glow);
+    }
+    input::placeholder { color: var(--text-muted); opacity: 0.6; }
+
+    /* ── Alerts ─────────────────────────────────────────── */
+    .alert {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      padding: 10px 16px;
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      border-left: 3px solid;
+    }
+    .alert-error   { background: #ef444412; border-color: var(--red);   color: #fca5a5; }
+    .alert-success { background: #22c55e12; border-color: var(--green); color: #86efac; }
+
+    /* ── Tables ─────────────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .data-table th {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--surface2); }
+
+    /* ── Status indicator ───────────────────────────────── */
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .status-live { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* ── Section heading ────────────────────────────────── */
+    .section-heading {
+      font-family: var(--cond);
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+    .section-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    /* ── Mono label ─────────────────────────────────────── */
+    .mono { font-family: var(--mono); }
+
+    /* ── Grid utilities ─────────────────────────────────── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+    .grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+
+    /* ── Scrollable log ─────────────────────────────────── */
+    .log-viewport {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      height: 420px;
+      overflow-y: auto;
+      padding: 1rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      line-height: 1.9;
+      color: var(--text-muted);
+    }
+    .log-line { white-space: pre-wrap; word-break: break-all; }
+    .log-line.info    { color: var(--text-dim); }
+    .log-line.error   { color: #fca5a5; }
+    .log-line.warn    { color: #fbbf24; }
+    .log-line.critical{ color: var(--red); font-weight: bold; }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .container { padding: 1rem; }
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="page">
+
+  {% if session.user %}
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">CAM</div>
+      <span class="topbar-title">Secure <span>Access</span></span>
+    </div>
+    <nav class="topbar-nav">
+      <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}"
+         href="{{ url_for('dashboard') }}">Dashboard</a>
+      {% if session.roles and ('ADMINISTRATOR' in session.roles or 'SECADM' in session.roles or 'RBACMNT' in session.roles or 'SECAUD' in session.roles) %}
+      <a class="nav-link {% if 'admin' in request.endpoint %}active{% endif %}"
+         href="{{ url_for('admin') }}">Admin</a>
+      {% endif %}
+      <a class="nav-link {% if request.endpoint == 'change_password' %}active{% endif %}"
+         href="{{ url_for('change_password') }}">Password</a>
+    </nav>
+    <div class="topbar-right">
+      <span class="topbar-user"><strong>{{ session.user }}</strong> · {{ session.roles | join(', ') }}</span>
+      <form method="post" action="{{ url_for('logout') }}" style="margin:0">
+        <button class="btn-logout" type="submit">LOGOUT</button>
+      </form>
+    </div>
+  </header>
+  {% endif %}
+
+  <div class="page">
+    {% block content %}{% endblock %}
+  </div>
+
+</body>
+</html>

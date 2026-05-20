@@ -1,0 +1,4 @@
+flask>=3.0
+gunicorn>=21.0
+ldap3>=2.9
+python-pam>=2.0

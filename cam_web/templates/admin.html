@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block title %}Admin — CAM{% endblock %}
+
+{% block head %}
+<style>
+  .admin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .full-width { grid-column: 1 / -1; }
+
+  .sessions-empty {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 2rem 0;
+    text-align: center;
+  }
+
+  .unlock-btn {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    padding: 3px 10px;
+    background: transparent;
+    border: 1px solid #ef444455;
+    color: var(--red);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .unlock-btn:hover { background: #ef444418; }
+
+  .log-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .log-controls select {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    border-radius: var(--radius);
+    outline: none;
+  }
+
+  .log-filter {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    border-radius: var(--radius);
+    outline: none;
+  }
+  .log-filter:focus { border-color: var(--amber); }
+
+  .stat-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .stat-mini {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.875rem 1rem;
+  }
+  .stat-mini .label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .stat-mini .val {
+    font-family: var(--cond);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--amber);
+  }
+
+  @media (max-width: 900px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .stat-bar   { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div style="margin-bottom:2rem">
+    <div class="section-heading">Admin Panel</div>
+    <div class="section-sub">Session management · Audit logs · User controls</div>
+  </div>
+
+  <!-- Quick stats -->
+  <div class="stat-bar" id="stat-bar">
+    <div class="stat-mini">
+      <div class="label">Active Sessions</div>
+      <div class="val" id="stat-sessions">—</div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Registry</div>
+      <div class="val" id="stat-registry" style="font-size:1rem;padding-top:4px">
+        <span class="status-dot status-live"></span> OK
+      </div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Your Role</div>
+      <div class="val" style="font-size:0.9rem;padding-top:4px">
+        {{ roles | join(' · ') }}
+      </div>
+    </div>
+    <div class="stat-mini">
+      <div class="label">Log File</div>
+      <div class="val" style="font-size:0.65rem;padding-top:6px;font-family:var(--mono);word-break:break-all;color:var(--text-dim)" id="stat-logfile">—</div>
+    </div>
+  </div>
+
+  <!-- Sessions + unlock -->
+  <div class="admin-grid">
+    <div class="card">
+      <div class="card-header">
+        <span class="dot"></span>Active Sessions
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="loadSessions()">↻ Refresh</button>
+      </div>
+      <div id="sessions-table">
+        <div class="sessions-empty">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Unlock user -->
+    {% if 'ADMINISTRATOR' in roles or 'SECADM' in roles %}
+    <div class="card">
+      <div class="card-header"><span class="dot"></span>Unlock User Account</div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.6">
+        Clears <code style="font-family:var(--mono);color:var(--amber)">loginFailures</code>,
+        <code style="font-family:var(--mono);color:var(--amber)">pwdAccountLockedTime</code>
+        and <code style="font-family:var(--mono);color:var(--amber)">accountLocked</code>
+        attributes for the specified user.
+      </p>
+      <div class="form-group">
+        <label for="unlock-user">Username</label>
+        <input type="text" id="unlock-user" placeholder="username" autocomplete="off">
+      </div>
+      <button class="btn btn-danger" onclick="unlockUser()">UNLOCK ACCOUNT</button>
+      <div id="unlock-result" style="margin-top:0.75rem;font-family:var(--mono);font-size:0.75rem"></div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Audit log viewer -->
+  <div class="card">
+    <div class="card-header">
+      <span class="dot"></span>Audit Log
+      <div class="log-controls" style="margin-left:auto;margin-bottom:0">
+        <select id="log-lines" onchange="loadLogs()">
+          <option value="100">Last 100</option>
+          <option value="200" selected>Last 200</option>
+          <option value="500">Last 500</option>
+          <option value="1000">Last 1000</option>
+        </select>
+        <input class="log-filter" id="log-filter" type="text"
+               placeholder="Filter lines…" oninput="filterLogs()">
+        <button class="btn btn-ghost btn-sm" onclick="loadLogs()">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="log-viewport" id="log-viewport">
+      <div class="sessions-empty">Loading…</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let _allLogLines = [];
+
+  async function loadSessions() {
+    try {
+      const r = await fetch('/admin/sessions');
+      const d = await r.json();
+      if (d.error) {
+        document.getElementById('sessions-table').innerHTML =
+          `<div class="sessions-empty" style="color:var(--red)">${d.error}</div>`;
+        document.getElementById('stat-sessions').textContent = 'ERR';
+        document.getElementById('stat-registry').innerHTML =
+          '<span style="color:var(--red)">CORRUPT</span>';
+        return;
+      }
+      document.getElementById('stat-sessions').textContent = d.sessions.length;
+      if (!d.sessions.length) {
+        document.getElementById('sessions-table').innerHTML =
+          '<div class="sessions-empty">No active sessions</div>';
+        return;
+      }
+      let html = `<table class="data-table">
+        <thead><tr>
+          <th>User</th><th>Token</th><th>Login</th><th>Expires</th>
+        </tr></thead><tbody>`;
+      d.sessions.forEach(s => {
+        const login   = s.login_time   ? s.login_time.replace('T',' ').slice(0,19)+' UTC' : '—';
+        const expires = s.expires_at   ? s.expires_at.replace('T',' ').slice(0,19)+' UTC' : '—';
+        html += `<tr>
+          <td style="color:var(--text)">${esc(s.user)}</td>
+          <td><span class="badge badge-amber">${esc(s.token)}</span></td>
+          <td>${login}</td>
+          <td>${expires}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      document.getElementById('sessions-table').innerHTML = html;
+    } catch(e) {
+      document.getElementById('sessions-table').innerHTML =
+        `<div class="sessions-empty" style="color:var(--red)">Failed to load: ${e}</div>`;
+    }
+  }
+
+  async function loadLogs() {
+    const n = document.getElementById('log-lines').value;
+    try {
+      const r = await fetch(`/admin/logs?n=${n}`);
+      const d = await r.json();
+      document.getElementById('stat-logfile').textContent = d.log_file || '—';
+      _allLogLines = d.lines || [];
+      filterLogs();
+    } catch(e) {
+      document.getElementById('log-viewport').innerHTML =
+        `<div class="sessions-empty" style="color:var(--red)">Failed to load logs: ${e}</div>`;
+    }
+  }
+
+  function filterLogs() {
+    const q = document.getElementById('log-filter').value.toLowerCase();
+    const vp = document.getElementById('log-viewport');
+    const lines = _allLogLines.filter(l => !q || l.toLowerCase().includes(q));
+    if (!lines.length) {
+      vp.innerHTML = '<div class="sessions-empty">No matching log entries</div>';
+      return;
+    }
+    vp.innerHTML = lines.map(l => {
+      const cls = l.includes('| ERROR') ? 'error'
+                : l.includes('| CRITICAL') ? 'critical'
+                : l.includes('| WARNING') ? 'warn'
+                : 'info';
+      return `<div class="log-line ${cls}">${esc(l)}</div>`;
+    }).join('');
+    vp.scrollTop = 0;
+  }
+
+  async function unlockUser() {
+    const uname = document.getElementById('unlock-user').value.trim();
+    const el    = document.getElementById('unlock-result');
+    if (!uname) { el.style.color='var(--red)'; el.textContent='Enter a username.'; return; }
+    try {
+      const r = await fetch(`/admin/unlock/${encodeURIComponent(uname)}`, { method: 'POST' });
+      const d = await r.json();
+      if (r.ok) {
+        el.style.color = 'var(--green)';
+        el.textContent = `✓ ${d.user} unlocked successfully.`;
+      } else {
+        el.style.color = 'var(--red)';
+        el.textContent = `Error ${r.status}: ${d.error || 'Failed'}`;
+      }
+    } catch(e) {
+      el.style.color = 'var(--red)';
+      el.textContent = `Network error: ${e}`;
+    }
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Initial load
+  loadSessions();
+  loadLogs();
+
+  // Auto-refresh every 30s
+  setInterval(() => { loadSessions(); loadLogs(); }, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,6 @@
+# /etc/pam.d/cam-gui-radius
+# RADIUS authentication — points to cam_radius Docker container on port 1812
+# Install: sudo cp system-config/pam.d/cam-gui-radius /etc/pam.d/cam-gui-radius
+
+auth    required    pam_radius_auth.so
+account required    pam_permit.so

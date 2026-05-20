@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Projects — CAM{% endblock %}
+{% block head %}
+<style>
+  .file-icon { font-size: 1rem; margin-right: 8px; }
+  .size-cell { font-family: var(--mono); font-size: 0.72rem; color: var(--text-muted); }
+  .empty-msg { font-family: var(--mono); font-size: 0.78rem; color: var(--text-muted); padding: 2rem 0; text-align: center; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div style="margin-bottom:1.5rem">
+    <a href="{{ url_for('dashboard') }}" style="font-family:var(--mono);font-size:0.75rem;color:var(--text-muted);text-decoration:none">← Dashboard</a>
+    <div class="section-heading" style="margin-top:0.5rem">Projects</div>
+    <div class="section-sub" style="font-family:var(--mono);font-size:0.72rem">{{ projects_dir }}</div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="dot"></span>Project Files</div>
+    {% if entries %}
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Type</th><th>Size</th><th>Modified</th></tr></thead>
+      <tbody>
+      {% for f in entries %}
+      <tr>
+        <td style="color:var(--text)">
+          <span class="file-icon">{% if f.is_dir %}📁{% else %}📄{% endif %}</span>{{ f.name }}
+        </td>
+        <td><span class="badge {% if f.is_dir %}badge-blue{% else %}badge-muted{% endif %}">{% if f.is_dir %}DIR{% else %}FILE{% endif %}</span></td>
+        <td class="size-cell">{% if not f.is_dir %}{{ (f.size / 1024) | round(1) }} KB{% else %}—{% endif %}</td>
+        <td class="size-cell">{{ f.mtime }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-msg">No project files found in {{ projects_dir }}</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

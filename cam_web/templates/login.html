@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Login — CAM Secure Access{% endblock %}
+
+{% block head %}
+<style>
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .login-panel {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .login-brand {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .login-logo-outer {
+    width: 56px; height: 56px;
+    border: 2px solid var(--amber);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    box-shadow: 0 0 30px var(--amber-glow);
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--amber);
+    letter-spacing: -1px;
+  }
+
+  .login-title {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: 1.6rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .login-title span { color: var(--amber); }
+
+  .login-sub {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2rem;
+  }
+
+  .login-card::before {
+    content: '';
+    display: block;
+    height: 3px;
+    background: linear-gradient(90deg, var(--amber), transparent);
+    margin: -2rem -2rem 2rem;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .banner-notice {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .banner-notice strong {
+    display: block;
+    color: var(--amber);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .login-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrap">
+  <div class="login-panel">
+
+    <div class="login-brand">
+      <div class="login-logo-outer">CAM</div>
+      <div class="login-title">Secure <span>Access</span></div>
+      <div class="login-sub">IEC 62443-4-2 · INDUSTRIAL AUTH SYSTEM</div>
+    </div>
+
+    <div class="login-card">
+
+      <!-- CR 1.12 – pre-login banner -->
+      <div class="banner-notice">
+        <strong>⚠ AUTHORISED USE ONLY</strong>
+        This system is for authorised personnel only.
+        All access is monitored and recorded. Unauthorised access may result
+        in disciplinary action and/or criminal prosecution.
+      </div>
+
+      {% if error %}
+      <div class="alert alert-error">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('login') }}" autocomplete="off">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username"
+                 placeholder="username" autofocus autocomplete="off"
+                 spellcheck="false">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password"
+                 placeholder="••••••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center; margin-top:0.5rem;">
+          AUTHENTICATE
+        </button>
+      </form>
+    </div>
+
+    <div class="login-footer">
+      ALL SESSIONS MONITORED · AUDIT LOGGED · IEC 62443-4-2
+    </div>
+
+  </div>
+</div>
+{% endblock %}

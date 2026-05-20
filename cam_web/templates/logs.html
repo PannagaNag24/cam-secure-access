@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs — CAM{% endblock %}
+{% block head %}
+<style>
+  .log-controls { display:flex; gap:0.75rem; margin-bottom:0.75rem; align-items:center; flex-wrap:wrap; }
+  .log-controls select, .log-filter {
+    background: var(--bg); border: 1px solid var(--border2);
+    color: var(--text); font-family: var(--mono); font-size: 0.75rem;
+    padding: 5px 10px; border-radius: var(--radius); outline: none;
+  }
+  .log-filter { flex:1; min-width:200px; }
+  .log-filter:focus { border-color: var(--amber); }
+  .log-meta { font-family:var(--mono); font-size:0.65rem; color:var(--text-muted); margin-bottom:0.5rem; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div style="margin-bottom:1.5rem">
+    <a href="{{ url_for('dashboard') }}" style="font-family:var(--mono);font-size:0.75rem;color:var(--text-muted);text-decoration:none">← Dashboard</a>
+    <div class="section-heading" style="margin-top:0.5rem">Audit Logs</div>
+    <div class="section-sub">{% if is_admin %}Full log access{% else %}Showing your activity only{% endif %}</div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span class="dot"></span>Log Viewer
+      <div class="log-controls" style="margin-left:auto;margin-bottom:0">
+        <select id="log-lines" onchange="load()">
+          <option value="100">Last 100</option>
+          <option value="200" selected>Last 200</option>
+          <option value="500">Last 500</option>
+          <option value="1000">Last 1000</option>
+        </select>
+        <input class="log-filter" id="log-filter" type="text" placeholder="Filter…" oninput="filter()">
+        <button class="btn btn-ghost btn-sm" onclick="load()">↻ Refresh</button>
+      </div>
+    </div>
+    <div class="log-meta" id="log-meta">Loading…</div>
+    <div class="log-viewport" id="log-viewport">Loading…</div>
+  </div>
+</div>
+<script>
+let _all = [];
+async function load() {
+  const n = document.getElementById('log-lines').value;
+  const q = document.getElementById('log-filter').value;
+  const r = await fetch(`/logs/data?n=${n}&q=${encodeURIComponent(q)}`);
+  const d = await r.json();
+  _all = d.lines || [];
+  document.getElementById('log-meta').textContent = `${_all.length} entries · ${d.log_file}`;
+  render(_all);
+}
+function filter() {
+  const q = document.getElementById('log-filter').value.toLowerCase();
+  render(q ? _all.filter(l => l.toLowerCase().includes(q)) : _all);
+}
+function render(lines) {
+  const vp = document.getElementById('log-viewport');
+  if (!lines.length) { vp.innerHTML = '<div style="text-align:center;padding:2rem;font-family:var(--mono);font-size:0.75rem;color:var(--text-muted)">No entries</div>'; return; }
+  vp.innerHTML = lines.map(l => {
+    const cls = l.includes('ERROR') ? 'error' : l.includes('CRITICAL') ? 'critical' : l.includes('WARNING') ? 'warn' : 'info';
+    return `<div class="log-line ${cls}">${esc(l)}</div>`;
+  }).join('');
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+load();
+setInterval(load, 30000);
+</script>
+{% endblock %}

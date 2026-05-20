@@ -1,0 +1,35 @@
+# ── Secrets — NEVER commit ───────────────────────────────────────────────
+config.py
+.env
+*.secret
+*.key
+*.pem
+certs/ca.key
+certs/ldap.key
+
+# ── LDAP runtime data ─────────────────────────────────────────────────────
+docker/ldap/data/
+docker/ldap/config/
+
+# ── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+
+# ── Logs and sessions ─────────────────────────────────────────────────────
+*.log
+.logs/
+sessions.json
+sessions.json.corrupt.*
+
+# ── OS / editor ───────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~

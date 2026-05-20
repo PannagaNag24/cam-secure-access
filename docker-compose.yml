@@ -1,0 +1,60 @@
+services:
+
+  # ═══════════════════════════════════════
+  # OpenLDAP — plain LDAP (no TLS)
+  # ═══════════════════════════════════════
+  ldap:
+    image: osixia/openldap:1.5.0
+    container_name: cam_ldap
+    hostname: cam_ldap
+    environment:
+      LDAP_ORGANISATION: "Example Corp"
+      LDAP_DOMAIN: "example.com"
+      LDAP_BASE_DN: "dc=example,dc=com"
+      LDAP_ADMIN_PASSWORD: "${LDAP_ADMIN_PASSWORD}"
+      LDAP_CONFIG_PASSWORD: "${LDAP_CONFIG_PASSWORD}"
+      LDAP_TLS: "false"
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ./docker/ldap/data:/var/lib/ldap
+      - ./docker/ldap/config:/etc/ldap/slapd.d
+      - ./docker/ldap/ldif:/ldif
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════
+  # LDAP Account Manager
+  # ═══════════════════════════════════════
+  lam:
+    image: ldapaccountmanager/lam:stable
+    container_name: cam_lam
+    depends_on:
+      - ldap
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      LAM_LANG: en_US
+      LDAP_SERVER: "ldap://cam_ldap:389"
+      LDAP_BASE_DN: "dc=example,dc=com"
+      LDAP_BIND_DN: "cn=admin,dc=example,dc=com"
+      LDAP_BIND_PASSWORD: "${LDAP_BIND_PASSWORD}"
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════
+  # FreeRADIUS — LDAP backend
+  # ═══════════════════════════════════════
+  radius:
+    image: freeradius/freeradius-server:latest
+    container_name: cam_radius
+    command: ["freeradius", "-X"]
+    depends_on:
+      - ldap
+    ports:
+      - "1812:1812/udp"
+      - "1813:1813/udp"
+      - "2083:2083/tcp"
+    volumes:
+      - ./docker/radius/freeradius:/etc/freeradius:rw
+    restart: unless-stopped

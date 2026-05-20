@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CAM{% endblock %}
+
+{% block head %}
+<style>
+  .perm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .perm-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: flex; flex-direction: column; gap: 0.75rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    text-decoration: none; color: inherit;
+  }
+  a.perm-card.enabled:hover {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 1px var(--amber-glow);
+  }
+  .perm-card.disabled { opacity: 0.35; pointer-events: none; }
+  .perm-icon { font-size: 1.5rem; line-height: 1; }
+  .perm-name { font-family: var(--cond); font-weight: 700; font-size: 0.95rem; letter-spacing: 1px; color: var(--text); }
+  .perm-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.5; }
+  .perm-action { margin-top: auto; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem; margin-bottom: 2rem;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.25rem;
+  }
+  .stat-label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .stat-value { font-family: var(--cond); font-size: 1.4rem; font-weight: 700; color: var(--amber); }
+  .stat-sub   { font-family: var(--mono); font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+  .role-tag   { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 1px; padding: 3px 10px; border: 1px solid var(--amber-dim); color: var(--amber); background: var(--amber-glow); border-radius: 2px; display: inline-block; margin: 2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-label">Logged in as</div>
+      <div class="stat-value">{{ user }}</div>
+      <div class="stat-sub">authenticated user</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Roles</div>
+      <div class="stat-value">{{ roles | length }}</div>
+      <div class="stat-sub">
+        {% for r in roles %}<span class="role-tag">{{ r }}</span>{% endfor %}
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Permissions</div>
+      <div class="stat-value">{{ perms | length }}</div>
+      <div class="stat-sub"><span class="status-dot status-live"></span>session active</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Auth source</div>
+      <div class="stat-value" style="font-size:1.1rem">{{ session.source }}</div>
+      <div class="stat-sub">authentication method</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="dot"></span>Access Panel</div>
+    <div class="perm-grid">
+
+      {% set items = [
+        ('Web',      '🌐', 'Web Portal',   'Access the CAM web portal',          web_url,                        True),
+        ('Projects', '📁', 'Projects',     'Browse project files',               '/projects',                    False),
+        ('Logs',     '📋', 'Audit Logs',   'View system audit logs',             '/logs',                        False),
+        ('Shell',    '⌨️',  'Shell Access', 'Restricted command shell',           '/shell',                       False),
+        ('LDAP',     '🔑', 'LDAP Admin',   'Directory management console',       ldap_url,                       True),
+      ] %}
+
+      {% for perm, icon, name, desc, href, external in items %}
+      {% set enabled = perm in perms %}
+      <a class="perm-card {% if enabled %}enabled{% else %}disabled{% endif %}"
+         href="{{ href if enabled else '#' }}"
+         {% if enabled and external %}target="_blank" rel="noopener noreferrer"{% endif %}>
+        <div class="perm-icon">{{ icon }}</div>
+        <div class="perm-name">{{ name }}</div>
+        <div class="perm-desc">{{ desc }}</div>
+        <div class="perm-action">
+          {% if enabled %}
+            <span class="badge badge-green">{% if external %}OPEN ↗{% else %}OPEN →{% endif %}</span>
+          {% else %}
+            <span class="badge badge-muted">NO ACCESS</span>
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+
+    </div>
+  </div>
+
+  {% if is_admin %}
+  <div style="margin-top:1.25rem">
+    <a class="btn btn-ghost" href="{{ url_for('admin') }}">⚙ Open Admin Panel</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
